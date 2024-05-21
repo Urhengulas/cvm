@@ -15,22 +15,12 @@ where
 
     // D2 & D3
     for a_t in a_set {
-        // D4
-        buf.remove(a_t);
-
-        // D5
-        let u_t = match buf.insert(a_t) {
-            Some(u_t) => u_t,
-            None => continue,
-        };
-
-        // D6
-        buf.update_p(a_t, u_t);
+        buf.insert(a_t);
     }
     buf.estimate()
 }
 
-struct CvmBuffer<'a, T> {
+pub struct CvmBuffer<'a, T> {
     buf: HashMap<&'a T, u32>,
     s: usize,
     p: u32,
@@ -42,7 +32,7 @@ impl<'a, T> CvmBuffer<'a, T>
 where
     T: Eq + Hash,
 {
-    fn new(s: usize) -> Self {
+    pub fn new(s: usize) -> Self {
         Self {
             buf: HashMap::with_capacity(s),
             s,
@@ -50,29 +40,26 @@ where
         }
     }
 
-    fn estimate(&self) -> u32 {
+    pub fn estimate(&self) -> u32 {
         (self.buf.len() as u32) * PRECISION / self.p
     }
 
-    fn insert(&mut self, a_t: &'a T) -> Option<u32> {
+    pub fn insert(&mut self, a_t: &'a T) {
+        self.buf.remove(a_t);
+
         let u_t = flip_coin();
         if u_t >= self.p {
-            None
         } else if self.buf.len() < self.s {
             self.buf.insert(a_t, u_t);
-            None
         } else {
-            Some(u_t)
+            self.update_p(a_t, u_t)
         }
     }
 
+    /// Get the entry with the highest value
     fn max(&mut self) -> (&'a T, u32) {
         let a_max: &T = self.buf.iter().max_by_key(|a| a.1).unwrap().0;
         self.buf.remove_entry(&a_max).unwrap()
-    }
-
-    fn remove(&mut self, k: &T) {
-        self.buf.remove(k);
     }
 
     fn update_p(&mut self, a_t: &'a T, u_t: u32) {
