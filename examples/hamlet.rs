@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fs};
+use std::collections::HashSet;
 
 fn main() {
     let input = read_hamlet();
@@ -16,7 +16,7 @@ fn main() {
 }
 
 fn read_hamlet() -> Vec<String> {
-    let text = fs::read_to_string("hamlet.txt").unwrap();
+    let text = include_str!("hamlet.txt");
     let text = text.replace(['.', ',', '?', ':', ';', '!'], " ");
     let text = text.replace("--", " ");
     let text = text.to_lowercase();
