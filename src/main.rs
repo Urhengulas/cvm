@@ -11,12 +11,14 @@ use std::{collections::HashSet, fs};
 
 fn main() {
     let input = read_words();
-    let estimate = estimate_distinct_elements(&input);
+    let estimate_100 = estimate_distinct_elements(&input, 100);
+    let estimate_500 = estimate_distinct_elements(&input, 500);
+    let estimate_1000 = estimate_distinct_elements(&input, 1000);
     let correct = input.into_iter().collect::<HashSet<_>>().len();
-    dbg!(estimate, correct);
+    dbg!(estimate_100, estimate_500, estimate_1000, correct);
 }
 
-fn estimate_distinct_elements(a_set: &[String]) -> u32 {
+fn estimate_distinct_elements(a_set: &[String], s: usize) -> u32 {
     const PRECISION: u32 = 100_000;
     fn flip_coin() -> u32 {
         rand::random::<u32>() % PRECISION
@@ -25,7 +27,6 @@ fn estimate_distinct_elements(a_set: &[String]) -> u32 {
     // D1
     let mut p = PRECISION;
     let mut b_set: Vec<(String, u32)> = Vec::new();
-    let s = 500;
 
     // D2 & D3
     for a_t in a_set {
