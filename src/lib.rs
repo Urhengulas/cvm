@@ -66,13 +66,17 @@ where
         }
     }
 
+    fn max(&mut self) -> (&'a T, u32) {
+        let a_max: &T = self.buf.iter().max_by_key(|a| a.1).unwrap().0;
+        self.buf.remove_entry(&a_max).unwrap()
+    }
+
     fn remove(&mut self, k: &T) {
         self.buf.remove(k);
     }
 
     fn update_p(&mut self, a_t: &'a T, u_t: u32) {
-        let (a_max, _) = self.buf.iter().max_by_key(|a| a.1).unwrap();
-        let (a_max, u_max) = self.buf.remove_entry(&a_max.clone()).unwrap();
+        let (a_max, u_max) = self.max();
 
         if u_t > u_max {
             self.p = u_t;
