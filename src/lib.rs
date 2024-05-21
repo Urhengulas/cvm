@@ -29,10 +29,7 @@ pub struct CvmBuffer<T> {
 
 const PRECISION: u32 = 1_000;
 
-impl<T> CvmBuffer<T>
-where
-    T: Clone + Eq + Hash,
-{
+impl<T> CvmBuffer<T> {
     pub fn new(s: usize) -> Self {
         Self {
             buf: HashMap::with_capacity(s),
@@ -44,7 +41,12 @@ where
     pub fn estimate(&self) -> u32 {
         (self.buf.len() as u32) * PRECISION / self.p
     }
+}
 
+impl<T> CvmBuffer<T>
+where
+    T: Clone + Eq + Hash,
+{
     pub fn insert(&mut self, a_t: T) {
         self.buf.remove(&a_t);
 
