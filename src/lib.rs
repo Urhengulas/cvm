@@ -1,4 +1,8 @@
 //! CVM distinct element estimation algorithm
+//!
+//! Implementation after "The CVM Algorithm for Estimating Distinct Elements in
+//! Streams" by Don Knuth, Stanford Computer Science Department (25 May 2023,
+//! revised 29 December 2023).
 
 const PRECISION: u32 = 1_000;
 
