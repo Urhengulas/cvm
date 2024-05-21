@@ -4,42 +4,84 @@
 //! Streams" by Don Knuth, Stanford Computer Science Department (25 May 2023,
 //! revised 29 December 2023).
 
-const PRECISION: u32 = 1_000;
+use std::{collections::HashMap, hash::Hash};
 
 pub fn estimate_distinct_elements<T>(a_set: &[T], s: usize) -> u32
 where
-    T: Clone + PartialEq,
+    T: Eq + Hash,
 {
     // D1
-    let mut p = PRECISION;
-    let mut b_set = Vec::new();
+    let mut buf = CvmBuffer::new(s);
 
     // D2 & D3
     for a_t in a_set {
         // D4
-        b_set.retain(|(a, _)| a != a_t);
+        buf.remove(a_t);
 
         // D5
-        let u_t = flip_coin();
-        if u_t >= p {
-            continue;
-        }
-        if b_set.len() < s {
-            b_set.push((a_t.clone(), u_t));
-            continue;
-        }
+        let u_t = match buf.insert(a_t) {
+            Some(u_t) => u_t,
+            None => continue,
+        };
 
         // D6
-        let (a_max, u_max) = b_set.iter_mut().max_by_key(|b| b.1).unwrap();
-        if u_t > *u_max {
-            p = u_t;
-        } else {
-            p = *u_max;
-            *a_max = a_t.clone();
-            *u_max = u_t;
+        buf.update_p(a_t, u_t);
+    }
+    buf.estimate()
+}
+
+struct CvmBuffer<T> {
+    buf: HashMap<T, u32>,
+    s: usize,
+    p: u32,
+}
+
+const PRECISION: u32 = 1_000;
+
+impl<T> CvmBuffer<T>
+where
+    T: Clone + Eq + Hash,
+{
+    fn new(s: usize) -> Self {
+        Self {
+            buf: HashMap::with_capacity(s),
+            s,
+            p: PRECISION,
         }
     }
-    (b_set.len() as u32) * PRECISION / p
+
+    fn estimate(&self) -> u32 {
+        (self.buf.len() as u32) * PRECISION / self.p
+    }
+
+    fn insert(&mut self, a_t: T) -> Option<u32> {
+        let u_t = flip_coin();
+        if u_t >= self.p {
+            None
+        } else if self.buf.len() < self.s {
+            self.buf.insert(a_t, u_t);
+            None
+        } else {
+            Some(u_t)
+        }
+    }
+
+    fn remove(&mut self, k: T) {
+        self.buf.remove(&k);
+    }
+
+    fn update_p(&mut self, a_t: T, u_t: u32) {
+        let (a_max, _) = self.buf.iter().max_by_key(|a| a.1).unwrap();
+        let (a_max, u_max) = self.buf.remove_entry(&a_max.clone()).unwrap();
+
+        if u_t > u_max {
+            self.p = u_t;
+            self.buf.insert(a_max, u_max);
+        } else {
+            self.p = u_max;
+            self.buf.insert(a_t, u_t);
+        }
+    }
 }
 
 fn flip_coin() -> u32 {
