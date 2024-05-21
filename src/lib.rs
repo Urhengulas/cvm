@@ -1,14 +1,14 @@
 //! CVM distinct element estimation algorithm
 
-pub fn estimate_distinct_elements(a_set: &[String], s: usize) -> u32 {
-    const PRECISION: u32 = 100_000;
-    fn flip_coin() -> u32 {
-        rand::random::<u32>() % PRECISION
-    }
+const PRECISION: u32 = 1_000;
 
+pub fn estimate_distinct_elements<T>(a_set: &[T], s: usize) -> u32
+where
+    T: Clone + PartialEq,
+{
     // D1
     let mut p = PRECISION;
-    let mut b_set: Vec<(String, u32)> = Vec::new();
+    let mut b_set = Vec::new();
 
     // D2 & D3
     for a_t in a_set {
@@ -36,4 +36,8 @@ pub fn estimate_distinct_elements(a_set: &[String], s: usize) -> u32 {
         }
     }
     (b_set.len() as u32) * PRECISION / p
+}
+
+fn flip_coin() -> u32 {
+    rand::random::<u32>() % PRECISION
 }
