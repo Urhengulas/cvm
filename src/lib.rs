@@ -30,17 +30,17 @@ where
     buf.estimate()
 }
 
-struct CvmBuffer<T> {
-    buf: HashMap<T, u32>,
+struct CvmBuffer<'a, T> {
+    buf: HashMap<&'a T, u32>,
     s: usize,
     p: u32,
 }
 
 const PRECISION: u32 = 1_000;
 
-impl<T> CvmBuffer<T>
+impl<'a, T> CvmBuffer<'a, T>
 where
-    T: Clone + Eq + Hash,
+    T: Eq + Hash,
 {
     fn new(s: usize) -> Self {
         Self {
@@ -54,7 +54,7 @@ where
         (self.buf.len() as u32) * PRECISION / self.p
     }
 
-    fn insert(&mut self, a_t: T) -> Option<u32> {
+    fn insert(&mut self, a_t: &'a T) -> Option<u32> {
         let u_t = flip_coin();
         if u_t >= self.p {
             None
@@ -66,11 +66,11 @@ where
         }
     }
 
-    fn remove(&mut self, k: T) {
-        self.buf.remove(&k);
+    fn remove(&mut self, k: &T) {
+        self.buf.remove(k);
     }
 
-    fn update_p(&mut self, a_t: T, u_t: u32) {
+    fn update_p(&mut self, a_t: &'a T, u_t: u32) {
         let (a_max, _) = self.buf.iter().max_by_key(|a| a.1).unwrap();
         let (a_max, u_max) = self.buf.remove_entry(&a_max.clone()).unwrap();
 
