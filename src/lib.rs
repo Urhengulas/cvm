@@ -20,17 +20,18 @@ where
     buf.estimate()
 }
 
-pub struct CvmBuffer<'a, T> {
-    buf: HashMap<&'a T, u32>,
+#[derive(Clone, Debug)]
+pub struct CvmBuffer<T> {
+    buf: HashMap<T, u32>,
     s: usize,
     p: u32,
 }
 
 const PRECISION: u32 = 1_000;
 
-impl<'a, T> CvmBuffer<'a, T>
+impl<T> CvmBuffer<T>
 where
-    T: Eq + Hash,
+    T: Clone + Eq + Hash,
 {
     pub fn new(s: usize) -> Self {
         Self {
@@ -44,8 +45,8 @@ where
         (self.buf.len() as u32) * PRECISION / self.p
     }
 
-    pub fn insert(&mut self, a_t: &'a T) {
-        self.buf.remove(a_t);
+    pub fn insert(&mut self, a_t: T) {
+        self.buf.remove(&a_t);
 
         let u_t = flip_coin();
         if u_t >= self.p {
@@ -57,12 +58,12 @@ where
     }
 
     /// Get the entry with the highest value
-    fn max(&mut self) -> (&'a T, u32) {
-        let a_max: &T = self.buf.iter().max_by_key(|a| a.1).unwrap().0;
-        self.buf.remove_entry(&a_max).unwrap()
+    fn max(&mut self) -> (T, u32) {
+        let a_max = self.buf.iter().max_by_key(|a| a.1).unwrap().0;
+        self.buf.remove_entry(&a_max.clone()).unwrap()
     }
 
-    fn update_p(&mut self, a_t: &'a T, u_t: u32) {
+    fn update_p(&mut self, a_t: T, u_t: u32) {
         let (a_max, u_max) = self.max();
 
         if u_t > u_max {
