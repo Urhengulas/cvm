@@ -48,10 +48,9 @@ where
     T: Clone + Eq + Hash,
 {
     pub fn insert(&mut self, a_t: T) {
-        self.buf.remove(&a_t);
-
         let u_t = flip_coin();
         if u_t >= self.p {
+            self.buf.remove(&a_t);
         } else if self.buf.len() < self.s {
             self.buf.insert(a_t, u_t);
         } else {
