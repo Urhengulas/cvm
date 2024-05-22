@@ -11,7 +11,7 @@ where
     T: Eq + Hash,
 {
     // D1
-    let mut buf = CvmBuffer::new(s);
+    let mut buf = CvmBuffer::<_, 1_000>::new(s);
 
     // D2 & D3
     for a_t in a_set {
@@ -21,15 +21,13 @@ where
 }
 
 #[derive(Clone, Debug)]
-pub struct CvmBuffer<T> {
+pub struct CvmBuffer<T, const PRECISION: u32 = 1_000> {
     buf: HashMap<T, u32>,
     s: usize,
     p: u32,
 }
 
-const PRECISION: u32 = 1_000;
-
-impl<T> CvmBuffer<T> {
+impl<T, const PRECISION: u32> CvmBuffer<T, PRECISION> {
     pub fn new(s: usize) -> Self {
         Self {
             buf: HashMap::with_capacity(s),
@@ -41,14 +39,18 @@ impl<T> CvmBuffer<T> {
     pub fn estimate(&self) -> u32 {
         (self.buf.len() as u32) * PRECISION / self.p
     }
+
+    fn flip_coin() -> u32 {
+        rand::random::<u32>() % PRECISION
+    }
 }
 
-impl<T> CvmBuffer<T>
+impl<T, const PRECISION: u32> CvmBuffer<T, PRECISION>
 where
     T: Clone + Eq + Hash,
 {
     pub fn insert(&mut self, a_t: T) {
-        let u_t = flip_coin();
+        let u_t = Self::flip_coin();
         if u_t >= self.p {
             self.buf.remove(&a_t);
         } else if self.buf.len() < self.s {
@@ -75,8 +77,4 @@ where
             self.buf.insert(a_t, u_t);
         }
     }
-}
-
-fn flip_coin() -> u32 {
-    rand::random::<u32>() % PRECISION
 }
